@@ -640,7 +640,7 @@
   let recaptchaToken = "";
   let isSubmitting = false;
 
-  if (!isPreview && previewBanner) previewBanner.hidden = true;
+  if (previewBanner) previewBanner.hidden = !isPreview;
 
   const labels = {
     services: {

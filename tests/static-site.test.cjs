@@ -52,12 +52,16 @@ test("landing page exposes the complete FAQ and Google consultation contract", (
   const html = read("index.html");
   const resourcesHtml = read("resources.html");
   const mainJs = fs.readFileSync(path.join(site, "assets", "js", "main.js"), "utf8");
+  const styles = fs.readFileSync(path.join(site, "assets", "css", "styles.css"), "utf8");
   assert.equal((html.match(/<details class="faq-item"/g) || []).length, 18);
   assert.match(html, /data-endpoint="(?:YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL|https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec)"/);
   assert.match(html, /data-recaptcha-sitekey="(?:YOUR_GOOGLE_RECAPTCHA_SITE_KEY|[A-Za-z0-9_-]{20,})"/);
   assert.match(html, /data-mode="auto"/);
   assert.match(html, /data-live-hosts="bridge-to-japan\.github\.io"/);
   assert.match(html, /data-privacy-policy-version="2026-08-24"/);
+  assert.match(html, /class="preview-banner" data-preview-banner hidden/);
+  assert.match(mainJs, /previewBanner\.hidden = !isPreview/);
+  assert.match(styles, /\.preview-banner\[hidden\]\s*\{[^}]*display:\s*none\s*!important;/);
   assert.match(mainJs, /isTrustedAppsScriptMessageOrigin/);
   assert.match(mainJs, /-script\\\.googleusercontent\\\.com/);
   assert.doesNotMatch(mainJs, /event\.source !== frame\.contentWindow/);

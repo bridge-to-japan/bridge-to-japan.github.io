@@ -1857,6 +1857,10 @@ html.is-anchor-transitioning .anchor-transition-veil.is-revealing::after {
   font-size: .84rem;
 }
 
+.preview-banner[hidden] {
+  display: none !important;
+}
+
 .form-progress {
   margin-bottom: 52px;
 }
