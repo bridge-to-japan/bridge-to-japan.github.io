@@ -1,0 +1,9 @@
+{
+  "name": "bridge-to-japan-apps-script-admin",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "check": "node --test tests/*.test.cjs"
+  }
+}

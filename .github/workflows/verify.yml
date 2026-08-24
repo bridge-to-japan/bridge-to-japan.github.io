@@ -1,0 +1,49 @@
+name: Verify consultation site
+
+on:
+  pull_request:
+    paths:
+      - "site/**"
+      - "apps-script/**"
+      - "apps-script-admin/**"
+      - "tests/**"
+      - ".github/workflows/verify.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "site/**"
+      - "apps-script/**"
+      - "apps-script-admin/**"
+      - "tests/**"
+      - ".github/workflows/verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Check frontend JavaScript syntax
+        run: node --check site/assets/js/main.js
+
+      - name: Verify static documents and local links
+        run: node --test tests/static-site.test.cjs
+
+      - name: Run Apps Script contract tests
+        working-directory: apps-script
+        run: npm test
+
+      - name: Run bound admin helper contract tests
+        working-directory: apps-script-admin
+        run: npm test
