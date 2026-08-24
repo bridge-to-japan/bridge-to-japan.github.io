@@ -61,6 +61,9 @@ test("landing page exposes the complete FAQ and Google consultation contract", (
   assert.match(html, /data-privacy-policy-version="2026-08-24"/);
   assert.match(html, /class="preview-banner" data-preview-banner hidden/);
   assert.match(mainJs, /previewBanner\.hidden = !isPreview/);
+  assert.match(mainJs, /typeof window\.grecaptcha\.render !== "function"/);
+  assert.match(mainJs, /window\.grecaptcha\.ready\(\(\) =>/);
+  assert.match(mainJs, /recaptchaWidgetId = window\.grecaptcha\.render/);
   assert.match(styles, /\.preview-banner\[hidden\]\s*\{[^}]*display:\s*none\s*!important;/);
   assert.match(mainJs, /isTrustedAppsScriptMessageOrigin/);
   assert.match(mainJs, /-script\\\.googleusercontent\\\.com/);

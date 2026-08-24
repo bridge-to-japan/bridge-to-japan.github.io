@@ -638,6 +638,7 @@
   let activeRequestId = null;
   let recaptchaWidgetId = null;
   let recaptchaToken = "";
+  let recaptchaReadyPending = false;
   let isSubmitting = false;
 
   if (previewBanner) previewBanner.hidden = !isPreview;
@@ -842,7 +843,14 @@
         script.async = true;
         script.defer = true;
         script.dataset.recaptchaScript = "true";
-        script.addEventListener("load", ensureRecaptcha, { once: true });
+        script.addEventListener("load", () => {
+          const api = window.grecaptcha;
+          if (typeof api?.ready === "function") {
+            api.ready(ensureRecaptcha);
+          } else {
+            setStepError(steps[currentStep], "보안 확인을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+          }
+        }, { once: true });
         script.addEventListener("error", () => {
           setStepError(steps[currentStep], "보안 확인을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
         }, { once: true });
@@ -850,28 +858,45 @@
       }
       return;
     }
-    if (recaptchaWidgetId !== null) return;
-    recaptchaWidgetId = window.grecaptcha.render(target, {
-      sitekey,
-      theme: "dark",
-      callback: (token) => {
-        recaptchaToken = token;
-        setStepError(steps[currentStep]);
-      },
-      "expired-callback": () => {
-        recaptchaToken = "";
-        announce("보안 확인 시간이 만료되었습니다. 다시 확인해 주세요.");
-      },
-      "error-callback": () => {
-        recaptchaToken = "";
-        setStepError(steps[currentStep], "보안 확인을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    if (typeof window.grecaptcha.render !== "function") {
+      if (typeof window.grecaptcha.ready === "function" && !recaptchaReadyPending) {
+        recaptchaReadyPending = true;
+        window.grecaptcha.ready(() => {
+          recaptchaReadyPending = false;
+          ensureRecaptcha();
+        });
       }
-    });
+      return;
+    }
+    if (recaptchaWidgetId !== null) return;
+    try {
+      recaptchaWidgetId = window.grecaptcha.render(target, {
+        sitekey,
+        theme: "dark",
+        callback: (token) => {
+          recaptchaToken = token;
+          setStepError(steps[currentStep]);
+        },
+        "expired-callback": () => {
+          recaptchaToken = "";
+          announce("보안 확인 시간이 만료되었습니다. 다시 확인해 주세요.");
+        },
+        "error-callback": () => {
+          recaptchaToken = "";
+          setStepError(steps[currentStep], "보안 확인을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+      });
+    } catch {
+      recaptchaWidgetId = null;
+      setStepError(steps[currentStep], "보안 확인을 준비하지 못했습니다. 이전 단계로 이동한 뒤 다시 시도해 주세요.");
+    }
   };
 
   const resetRecaptcha = () => {
     recaptchaToken = "";
-    if (window.grecaptcha && recaptchaWidgetId !== null) window.grecaptcha.reset(recaptchaWidgetId);
+    if (typeof window.grecaptcha?.reset === "function" && recaptchaWidgetId !== null) {
+      window.grecaptcha.reset(recaptchaWidgetId);
+    }
   };
 
   const buildPayload = () => ({
